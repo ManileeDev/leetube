@@ -1,35 +1,60 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { RiVideoAddLine } from "react-icons/ri";
 import { MdOutlineNotificationsNone } from "react-icons/md";
 import { RxAvatar } from "react-icons/rx";
 import { IoMdMic } from "react-icons/io";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toggle } from '../features/sidebarslice';
 import { Link } from 'react-router-dom';
 import { Auto_Suggest_API } from "../utils/constants"
+import { addtoCache, setValue } from '../features/searchSlice';
 
 const Header = () => {
     const dispatch = useDispatch()
     const [searchQuery, setSearchQuery] = useState("")
     const [suggestions, setSuggestions] = useState(null)
-    const [isShowSuggestions,setIsShowSuggestions] = useState(false)
+    const [isShowSuggestions, setIsShowSuggestions] = useState(false)
+    const searchCache = useSelector((store) => store.search.cache || {})
+    const suggestionsRef = useRef(null); // Ref for suggestions container
 
     useEffect(() => {
-        if(!searchQuery){
-            setSuggestions(null);
-            return
+        if (searchCache[searchQuery]) {
+            setSuggestions(searchCache[searchQuery])
         }
-        const timer = setTimeout(async () => {
-            const response = await fetch(Auto_Suggest_API + searchQuery)
-            const result = await response.json()
-            setSuggestions(result[1]);
-        }, 200)
-
-        return () => {
-            clearTimeout(timer)
+        else {
+            const timer = setTimeout(async () => {
+                const response = await fetch(Auto_Suggest_API + searchQuery)
+                const result = await response.json()
+                setSuggestions(result[1]);
+                dispatch(addtoCache({
+                    [searchQuery]: result[1] || []
+                }))
+            }, 200)
+            return () => {
+                clearTimeout(timer)
+            }
         }
-    }, [searchQuery]);
+    }, [searchQuery, searchCache, dispatch]);
 
+    const handleSuggestionClick = (suggestion) => {
+        setSearchQuery(suggestion);
+        setIsShowSuggestions(false);
+        dispatch(setValue(suggestion))
+    }
+
+    const handleMouseDown = (event) => {
+        // Prevent onBlur from hiding suggestions when clicking on the suggestions list
+        if (suggestionsRef.current && suggestionsRef.current.contains(event.target)) {
+            event.preventDefault();
+        }
+    };
+    const handleInputBlur = () => {
+        setTimeout(() => {
+            if (!suggestionsRef.current || !suggestionsRef.current.contains(document.activeElement)) {
+                setIsShowSuggestions(false);
+            }
+        }, 100); // Delay hiding suggestions to allow click
+    };
 
     return (
         <div className='grid grid-flow-col bg-white fixed w-full top-0 left-0 z-10'>
@@ -44,18 +69,21 @@ const Header = () => {
                         type="text" placeholder='Search'
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        onFocus={()=>setIsShowSuggestions(true)}
-                        onBlur={()=> setIsShowSuggestions(false)}
+                        onKeyDown={() => setIsShowSuggestions(true)}
+                        onBlur={handleInputBlur}
                     />
                     <button className="border border-gray-400 px-5 py-2 rounded-r-full bg-gray-100">
-                    <i className="bi bi-search"></i>
+                        <i className="bi bi-search"></i>
                     </button>
                     <IoMdMic className='size-8 text-3xl mt-[6px] ml-4 bg-gray-100 rounded-full p-2' />
                 </div>
-                {(suggestions && suggestions.length > 0) && (isShowSuggestions) && <div className='fixed bg-white w-[30.5rem] py-2  rounded-lg drop-shadow-2xl mt-2 border-gray-200'>
-                    <ul>
-                        {suggestions.map(suggestion=>(<li key="" className='px-5 py-2 cursor-pointer hover:bg-gray-100'><i className="bi bi-search text-xs"></i> {suggestion}</li>))}
-                    </ul>
+                {isShowSuggestions && suggestions.length > 0 && <div className='fixed bg-white w-[30.5rem] py-2  rounded-lg drop-shadow-2xl mt-2 border-gray-200' ref={suggestionsRef}
+                    onMouseDown={handleMouseDown} >
+
+                    {suggestions.map((suggestion, index) => {
+                        return (<div key={index} className='px-5 py-2 cursor-pointer hover:bg-gray-100' onClick={() => handleSuggestionClick(suggestion)}  ><i className="bi bi-search text-xs p-2"></i>{suggestion}</div>)
+                    })}
+
                 </div>}
             </div>
 

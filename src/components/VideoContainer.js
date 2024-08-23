@@ -1,22 +1,37 @@
 import React, { useEffect, useState } from 'react'
-import { YT_URL } from '../utils/constants'
+import { YT_URL, searchAPI } from '../utils/constants'
 import VideoCard, { AdVideoCard } from './VideoCard'
 import { Link } from 'react-router-dom'
+import { useSelector , useDispatch } from 'react-redux'
+import { setVideoDatas } from '../features/videosSlice'
 
 const VideoContainer = () => {
   const [videos, setVideos] = useState([])
+  const searchValue = useSelector((store) => store.search.value || "")
+  const dispatch = useDispatch();
   useEffect(() => {
-    getData();
-  }, [])
-  const getData = async () => {
-    const response = await fetch(YT_URL)
+      if(searchValue.length > 0){
+        getData(searchAPI+searchValue);
+      }
+      else{
+        getData(YT_URL);
+      }   
+  }, [searchValue])
+
+  const getData = async (url) => {  
+    const response = await fetch(url)
     const result = await response.json()
-    setVideos(result.items)
+    const normalizedVideos = result.items.map((video)=>({
+      ...video,
+      id: video.id.videoId || video.id
+    }))
+    setVideos(normalizedVideos)
   }
+
   return (
     <div className="flex flex-wrap">
-      {videos[0] && <Link to={`/watch?v=${videos[0].id}`}><AdVideoCard info={videos[0]} isAd={true}/></Link>}
-      {videos.slice(1).map((video) => (<Link key={video.id} to={`/watch?v=${video.id}`}><VideoCard info={video} /></Link>))}
+      {videos && videos[0] && <Link to={`/watch?v=${videos[0].id}`} onClick={()=>dispatch(setVideoDatas(videos[0]))}><AdVideoCard info={videos[0]} isAd={true}/></Link>}
+      {videos && videos.slice(1).map((video) => (<Link key={video.id} to={`/watch?v=${video.id}`} onClick={()=>dispatch(setVideoDatas(video))}><VideoCard info={video} /></Link>))}
     </div>
   )
 }
