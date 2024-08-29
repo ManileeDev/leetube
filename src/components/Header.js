@@ -6,8 +6,8 @@ import { IoMdMic } from "react-icons/io";
 import { useDispatch, useSelector } from 'react-redux';
 import { toggle } from '../features/sidebarslice';
 import { Link, useNavigate } from 'react-router-dom';
-import { Auto_Suggest_API } from "../utils/constants"
 import { addtoCache, setValue } from '../features/searchSlice';
+import { SUGGESTION_API } from '../utils/constants';
 
 const Header = () => {
     const dispatch = useDispatch()
@@ -25,7 +25,7 @@ const Header = () => {
         }
         else {
             const timer = setTimeout(async () => {
-                const response = await fetch(Auto_Suggest_API + searchQuery)
+                const response = await fetch(SUGGESTION_API + searchQuery)
                 const result = await response.json()
                 setSuggestions(result[1]);
                 dispatch(addtoCache({

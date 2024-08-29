@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { close, toggleHome } from '../features/sidebarslice';
 import { useSearchParams } from 'react-router-dom';
 import moment from 'moment/moment'
-import { YT_API_KEY } from '../utils/constants';
 import { setVideoDatas } from '../features/videosSlice';
 import { GoThumbsup } from "react-icons/go";
 import { GoThumbsdown } from "react-icons/go";
@@ -11,6 +10,7 @@ import { PiShareFat } from "react-icons/pi";
 import { BsThreeDots } from "react-icons/bs";
 import CommentsContainer from './CommentsContainer';
 import Livechat from './Livechat';
+import { API_KEY } from '../utils/constants';
 
 const WatchVideo = () => {
   const videoDatas = useSelector(store => store.videos)
@@ -25,7 +25,7 @@ const WatchVideo = () => {
     if (!video || video.id !== watchUrl) {
       const fetchVideoData = async () => {
         try {
-          const url = `https://www.googleapis.com/youtube/v3/videos?id=${watchUrl}&part=snippet,contentDetails,statistics&key=${YT_API_KEY}`;
+          const url = `https://www.googleapis.com/youtube/v3/videos?id=${watchUrl}&part=snippet,contentDetails,statistics&key=${API_KEY}`;
           const response = await fetch(url);
           const result = await response.json();
           if (result.items && result.items.length > 0) {
@@ -44,7 +44,7 @@ const WatchVideo = () => {
     return () => {
       dispatch(toggleHome())
     }
-  }, [dispatch])
+  }, [dispatch,video,watchUrl])
 
 
   const { snippet, statistics } = video || {}

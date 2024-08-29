@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { YT_URL, searchAPI } from '../utils/constants'
 import VideoCard, { AdVideoCard } from './VideoCard'
 import { Link } from 'react-router-dom'
 import { useSelector , useDispatch } from 'react-redux'
 import { setVideoDatas } from '../features/videosSlice'
+import { SEARCH_API, YT_API_URL } from '../utils/constants'
 
 const VideoContainer = () => {
   const [videos, setVideos] = useState([])
@@ -11,10 +11,10 @@ const VideoContainer = () => {
   const dispatch = useDispatch();
   useEffect(() => {
       if(searchValue.length > 0){
-        getData(searchAPI+searchValue);
+        getData(SEARCH_API+searchValue);
       }
       else{
-        getData(YT_URL);
+        getData(YT_API_URL)
       }   
   }, [searchValue])
 
@@ -27,6 +27,8 @@ const VideoContainer = () => {
     }))
     setVideos(normalizedVideos)
   }
+
+  console.log(process.env.REACT_APP_YT_URL+process.env.REACT_APP_YT_API_KEY)
 
   return (
     <div className="flex flex-wrap">
