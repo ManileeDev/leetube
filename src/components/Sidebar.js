@@ -23,7 +23,7 @@ const Sidebar = () => {
   if (isShow) 
 
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 flex">
+    <div className="fixed inset-0 flex z-10">
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={()=>dispatch(toggle())} ></div>
       <div className="relative bg-white w-60 h-full shadow-xl">
         <button
