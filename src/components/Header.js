@@ -5,17 +5,19 @@ import { RxAvatar } from "react-icons/rx";
 import { IoMdMic } from "react-icons/io";
 import { useDispatch, useSelector } from 'react-redux';
 import { toggle } from '../features/sidebarslice';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Auto_Suggest_API } from "../utils/constants"
 import { addtoCache, setValue } from '../features/searchSlice';
 
 const Header = () => {
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const [searchQuery, setSearchQuery] = useState("")
     const [suggestions, setSuggestions] = useState(null)
     const [isShowSuggestions, setIsShowSuggestions] = useState(false)
     const searchCache = useSelector((store) => store.search.cache || {})
     const suggestionsRef = useRef(null); // Ref for suggestions container
+    const searchedValue = useSelector(store=>store.search.value)
 
     useEffect(() => {
         if (searchCache[searchQuery]) {
@@ -35,6 +37,7 @@ const Header = () => {
             }
         }
     }, [searchQuery, searchCache, dispatch]);
+    
 
     const handleSuggestionClick = (suggestion) => {
         setSearchQuery(suggestion);
@@ -56,6 +59,9 @@ const Header = () => {
         }, 100); // Delay hiding suggestions to allow click
     };
 
+    useEffect(()=>{
+        navigate("/")
+    },[searchedValue,navigate])
     return (
         <div className='grid grid-flow-col bg-white fixed w-full top-0 left-0 z-10'>
             <div className='flex items-center col-span-1'>
@@ -81,7 +87,7 @@ const Header = () => {
                     onMouseDown={handleMouseDown} >
 
                     {suggestions.map((suggestion, index) => {
-                        return (<div key={index} className='px-5 py-2 cursor-pointer hover:bg-gray-100' onClick={() => handleSuggestionClick(suggestion)}  ><i className="bi bi-search text-xs p-2"></i>{suggestion}</div>)
+                        return (<div key={index} className='px-5 py-2 cursor-pointer hover:bg-gray-100' onClick={() => handleSuggestionClick(suggestion)} ><i className="bi bi-search text-xs p-2"></i>{suggestion}</div>)
                     })}
 
                 </div>}

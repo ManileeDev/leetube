@@ -24,7 +24,7 @@ const Livechat = () => {
         }, 1500);
 
         return () => clearInterval(i);
-    }, []);
+    }, [dispatch]);
     useEffect(() => {
         if (livechatRef.current) {
             livechatRef.current.scrollTop = livechatRef.current.scrollHeight;
@@ -35,7 +35,7 @@ const Livechat = () => {
         <div className='w-full h-[500px] mx-4 border border-gray-200 rounded-xl overflow-hidden'>
             <h1 className='text-center text-sm font-semibold border-b border-gray-200 p-1 cursor-pointer hover:bg-gray-200 py-2'>Show Chat</h1>
             <div className='flex flex-col h-[410px] overflow-y-scroll w-80 overflow-x-hidden border-b border-gray-200' ref={livechatRef}>
-                {chatMessages && chatMessages.map(c => <LiveChatList key={c.id} name={c.name} chatText={c.chatText} />)}
+                {chatMessages && chatMessages.map((c,i) => <LiveChatList key={i} name={c.name} chatText={c.chatText} />)}
             </div>
             <form className='flex justify-between items-center p-2'
                 onSubmit={(e) => {
